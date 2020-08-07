@@ -1,0 +1,9 @@
+1: 根据不同上下文可分为：
+  General headers: 同时适用于请求和响应消息，但与最终消息主体中传输的数据无关的消息头。
+  Request headers: 包含更多有关要获取的资源或客户端本身信息的消息头。
+  Response headers: 包含有关响应的补充信息，如其位置或服务器本身（名称和版本等）的消息头。
+  Entity headers: 包含有关实体主体的更多信息，比如主体长(Content-Length)度或其MIME类型。
+
+2: 根据代理对其的处理方式分为
+   2.1: 端到端消息头(End-to-end headers):这类消息头必须被传输到最终的消息接收者，也即，请求的服务器或响应的客户端。中间的代理服务器必须转发未经修改的端到端消息头，并且必须缓存它们。
+   2.2: 逐跳消息头(Hop-by-hop headers):这类消息头仅对单次传输连接有意义，不能通过代理或缓存进行重新转发。这些消息头包括 Connection, Keep-Alive, Proxy-Authenticate, Proxy-Authorization, TE, Trailer, Transfer-Encoding 及 Upgrade。注意，只能使用 Connection 来设置逐跳一般头。
