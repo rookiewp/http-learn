@@ -1,0 +1,79 @@
+1: uri = url + urn
+
+2: url的组成：url = 协议 + 主机 + 端口 + 路径 + 查询 + 片段
+
+3： url = http://www.example.com:80/path/to/myfile?key1=value1&key2=value2#SomewhereInTheDocument
+  3.1：协议：http://
+  3.2：主机：www.example.com
+  3.3：端口：:80
+  3.4：路径：/path/to/myfile
+  3.5：查询：?key1=value1&key2=value2
+  3.6：片段：#SomewhereInTheDocument
+
+4：常见的协议
+  4.1：data：data urls
+  4.2：http/https
+  4.3：file: 指定主机上文件的名称
+  4.4：ftp: 文件传输协议
+  4.5：mailto: 电子邮件地址
+  4.6：tel: 电话
+  4.7：urn: 统一资源名称
+  4.8：ssh: 安全 shell
+  4.9：ws/wss: websocket
+
+5：data urls
+  5.1: 语法：data:[<mediatype>][;base64],<data>
+  5.2: 前端应用：
+  5.2.1：<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==" />
+  5.2.2：<script src="data:application/javascript;base64,js代码的base64编码"><script>
+  5.2.3：<link src="data:text/css;base64,css的base64编码" />
+  5.2.4：css文件中：background-image:url(data:image/x-icon;base64,AAABAAEAEBAAAAAAAABoBQAAF...)
+  5.3: data url的优缺点
+    利：
+      减少 HTTP 
+      请求当访问外部资源很麻烦或受限时（比如服务器 ip 被墙
+      当图片是在服务器端用程序动态生成，每个访问用户显示的都不同
+      当图片的体积太小，占用一个 HTTP
+      会话不值得时没有图片更新要重新上传，还要清理缓存的问题
+    弊：
+      Base64 编码的数据体积通常是原数据的体积 4/3
+      URL 形式的图片不会被浏览器缓存，这意味着每次访问页面时都被下载一次。
+      增加了 CSS 文件的尺寸
+      IE678兼容性不适合 
+      lazy loading
+      不利于维护
+  移动端不宜使用 Data URI 技术（解码耗 CPU）
+
+5.4：前端base64编码
+  js: 
+    var encodedData = window.btoa("foo@gmail.com"); // 编码
+    var decodedData = window.atob("Zm9vQGdtYWlsLmNvbQ=="); // 解码
+  node:
+    //base64编码
+    var  b = new Buffer("foo@gmail.com");
+    var s = b.toString('base64')
+    console.log("邮箱编码:"+s)
+    //base64解码
+    var b = new Buffer("Zm9vQGdtYWlsLmNvbQ==","base64")
+    var s = b.toString();
+    console.log("邮箱解码:"+s)
+
+6：url编码
+  6.1: RFC3986文档规定，Url中只允许包含英文字母（a-zA-Z）、数字（0-9）、-_.~4个特殊字符以及所有保留字符， 保留字! * ' ( ) ; : @ & = + $ , / ? # [ ]
+  6.2: 编码方式 %加2位16进制字符
+  6.3: 为什么要编码：歧义，安全
+  6.4：前端url编码方式
+   6.4.1: escape / unescape, encodeURI / decodeURI, encodeURIComponent / decodeURIComponent
+   6.4.2: 三个函数的安全字符（即函数不会对这些字符进行编码）
+    escape(69个): */@+-._0-9a-zA-Z, 已废弃，url编码用下面2中方式
+    encodeURI(82个): !#$&'()*+,/:;=?@-._~0-9a-zA-Z
+    encodeURIComponent（71个）：!'()*-._~0-9a-zA-Z
+    所以encodeURIComponent的编码范围比encodeURI大
+  6.4.3：encodeURI编码整个url: 
+    encodeURI("http://www.cnblogs.com/season-huang/some other thing");
+    => "http://www.cnblogs.com/season-huang/some%20other%20thing"; 空格转为%20
+  6.4.4：encodeURIComponent编码url参数：
+    var param = "http://www.cnblogs.com/season-huang/"; //param为参数
+    param = encodeURIComponent(param);
+    var url = "http://www.cnblogs.com?next=" + param;
+    console.log(url) // "http://www.cnblogs.com?next=http%3A%2F%2Fwww.cnblogs.com%2Fseason-huang%2F"
