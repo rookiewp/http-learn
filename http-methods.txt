@@ -7,6 +7,15 @@ http方法：
    5.1: 检测服务器所支持的请求方法
    5.2: CORS 中的预检请求
 6: DELETE
-7: PUT：put和post的区别
+7: PUT
 8: TRACE
 9: PATCH: 用于对资源进行部分修改。
+
+POST，PUT，PATCH区别：(CRUD = create read update delete)
+(1) POST: 总是出创建一个新的资源 create
+(2) PUT: 如果资源存在则更新 update，不存在就创建 create
+(3) PATCH: 如果资源存在则更新 create, 不存在则抛出异常
+(4) GET: read
+(5) DELETE: delete
+
+其中GET和PUT是幂等：多次请求，不影响结果

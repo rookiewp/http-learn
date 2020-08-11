@@ -1,0 +1,65 @@
+1: 缓存分类：
+  1.1: 私有缓存（浏览器缓存）：私有缓存只能用于单独用户
+  1.2: 共享缓存（代理缓存）：共享缓存存储的响应能够被多个用户使用
+
+注意：通常只有GET方法才会被缓存
+
+2：强制缓存（不发请求给服务器）(先强制缓存，再协商缓存)
+  2.1：Expires (过期时间)
+    2.1.1：绝对时间。如：Wed, 21 Oct 2015 07:28:00 GMT
+    2.1.2：受本地时间影响，如果修改本地时间可能会导致缓存失效
+    2.1.3：属于http/1.0
+    2.1.4：如果在Cache-Control响应头设置了 "max-age" 或者 "s-max-age" 指令，那么 Expires 头会被忽略
+  2.2：Cache-Control：属于http/1.1
+    2.2.1：public：表明响应可以被任何对象（包括：发送请求的客户端，代理服务器，等等）缓存，即使是通常不可缓存的内容。（例如：1.该响应没有max-age指令或Expires消息头；2. 该响应对应的请求方法是 POST 。）
+    2.2.2：private：表明响应只能被单个用户缓存，不能作为共享缓存（即代理服务器不能缓存它）。私有缓存可以缓存响应内容，比如：对应用户的本地浏览器。
+    2.2.3：no-store：缓存不应存储有关客户端请求或服务器响应的任何内容，即不使用任何缓存。
+    2.2.4：no-cache：不管本地副本是否过期，使用资源副本前，一定要到源服务器进行副本有效性校验，也就是协商缓存。
+    2.2.5：must-revalidate：本地副本过期前，可以使用本地副本；本地副本一旦过期，必须去源服务器进行有效性校验。
+    2.2.6：proxy-revalidate：与must-revalidate作用相同，但它仅适用于共享缓存（例如代理），并被私有缓存忽略。
+    2.2.7：max-age=<seconds>：设置缓存存储的最大周期，超过这个时间缓存被认为过期(单位秒)。与Expires相反，时间是相对于请求的时间。是相对时间，相对于第一次请求的时间
+    2.2.8：s-maxage=<seconds>：覆盖max-age或者Expires头，但是仅适用于共享缓存(比如各个代理)，私有缓存会忽略它。
+    2.2.9：max-stale[=<seconds>]：表明客户端愿意接收一个已经过期的资源。可以设置一个可选的秒数，表示响应不能已经过时超过该给定的时间。
+    2.2.10：no-transform：不得对资源进行转换或转变。Content-Encoding、Content-Range、Content-Type等HTTP头不能由代理修改。例如，非透明代理或者如Google's Light Mode可能对图像格式进行转换，以便节省缓存空间或者减少缓慢链路上的流量。no-transform指令不允许这样做。
+    2.2.11：only-if-cached：表明客户端只接受已缓存的响应，并且不要向原始服务器检查是否有更新的拷贝。
+  2.3：能用在请求头中的：
+    Cache-Control: max-age=<seconds>
+    Cache-Control: max-stale[=<seconds>]
+    Cache-Control: min-fresh=<seconds>
+    Cache-control: no-cache 
+    Cache-control: no-store
+    Cache-control: no-transform
+    Cache-control: only-if-cached
+  2.4：能用在响应头中的：
+    Cache-control: must-revalidate
+    Cache-control: no-cache
+    Cache-control: no-store
+    Cache-control: no-transform
+    Cache-control: public
+    Cache-control: private
+    Cache-control: proxy-revalidate
+    Cache-Control: max-age=<seconds>
+    Cache-control: s-maxage=<seconds>
+
+3：协商缓存
+  3.1：Last-Modified：响应头
+    3.1.1：格式：Wed, 21 Oct 2015 07:28:00 GMT 
+    3.1.2：优先级比ETag低
+    3.1.3：缺点：如果本地打开缓存文件，即使没有对文件进行修改，但还是会造成 Last-Modified 被修改，服务端不能命中缓存导致发送相同的资源。因为 Last-Modified 只能以秒计时，如果在不可感知的时间内修改完成文件，那么服务端会认为资源还是命中了，不会返回正确的资源
+  3.2：If-Modified-Since：请求头
+    3.2.1：如果资源被修改，返回200，如果资源没有被修改返回304.
+    3.2.2：只能出在在GET和HEAD方法中。
+    3.2.3：当与 If-None-Match 一同出现时，它（If-Modified-Since）会被忽略掉，除非服务器不支持 If-None-Match。
+  3.3：If-Unmodified-Since：请求头
+    只有当资源在指定的时间之后没有进行过修改的情况下，服务器才会返回请求的资源，或是接受 POST 或其他 non-safe 方法的请求。如果所请求的资源在指定的时间之后发生了修改，那么会返回 412
+  3.4：ETag：响应头
+    语法：W/"<etag_value>"或"<etag_value>"，W/可选，表示弱验证
+  3.5：
+    对于 GET 和 HEAD 请求方法来说，当且仅当服务器上没有任何资源的 ETag 属性值与这个首部中列出的相匹配的时候，服务器端会才返回所请求的资源，响应码为  200  。对于其他方法来说，当且仅当最终确认没有已存在的资源的  ETag 属性值与这个首部中所列出的相匹配的时候，才会对请求进行相应的处理。
+
+    对于  GET 和 HEAD 方法来说，当验证失败的时候，服务器端必须返回响应码 304 （Not Modified，未改变）。对于能够引发服务器状态改变的方法，则返回 412 （Precondition Failed，前置条件失败）。需要注意的是，服务器端在生成状态码为 304 的响应的时候，必须同时生成以下会存在于对应的 200 响应中的首部：Cache-Control、Content-Location、Date、ETag、Expires 和 Vary 。
+
+4：Pragma：
+  Pragma 是HTTP/1.0标准中定义的一个header属性，请求中包含Pragma的效果跟在头信息中定义Cache-Control: no-cache相同，但是HTTP的响应头没有明确定义这个属性，所以它不能拿来完全替代HTTP/1.1中定义的Cache-control头。通常定义Pragma以向后兼容基于HTTP/1.0的客户端。
+
+5：Vary头，内容协商机制，Vary与CORS，Vary与Accept-Encoding
